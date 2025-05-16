@@ -2,9 +2,9 @@ require("@nomicfoundation/hardhat-toolbox");
 require("dotenv").config();
 
 const PRIVATE_KEYS = [
-  process.env.PRIVATE_KEY1, // 0x2cC285279f6970d00F84f3034439ab8D29D04d97 
-  process.env.PRIVATE_KEY2,  // 0x1e1864802DcF4A0527EF4315Da37D135f6D1B64B
-  process.env.PRIVATE_KEY3, // 0x521D5d2d40C80BAe1fec2e75B76EC03eaB82b4E0
+  process.env.PRIVATE_KEY1, // 0x0Ef131b9E75e426e942493647d14022DDf96c89D 
+  process.env.PRIVATE_KEY2,  // 0x42eaD1C7b157cC7d46b26D2c0c08D197339d4EDc
+  process.env.PRIVATE_KEY3, // 0x20F948bC87157e4a9fF555613c095d3725622499
 ]
 
 /** @type import('hardhat/config').HardhatUserConfig */
