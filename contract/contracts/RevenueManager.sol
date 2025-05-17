@@ -69,7 +69,7 @@ abstract contract RevenueManager is IRevenueManager, ERC165 {
     function _afterSubmitRevenue(address _token, uint256 _amount, address _rewardRecipient) internal virtual {}
 
     /**
-     * @dev 필수 오버라이딩 함수
+     * @dev 수익금 정산 권한을 확인하는 함수
      * @param _target 권한 확인 대상 주소
      */
     function _isAuthorized(address _target) internal view virtual returns (bool isAuthorized) {

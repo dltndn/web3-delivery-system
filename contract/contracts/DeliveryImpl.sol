@@ -83,7 +83,7 @@ contract DeliveryImpl is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgr
             )
         );
         bytes32 digest = _hashTypedDataV4(structHash);
-        // manager 서명 검증
+        // manager 서명 검증, Contract Account의 서명 검증 지원
         bool isValid = SignatureChecker.isValidSignatureNow(_manager, digest, _managerSignature);
         if (!isValid) revert InvalidSignature();
 
@@ -149,11 +149,11 @@ contract DeliveryImpl is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgr
         );
         bytes32 digest = _hashTypedDataV4(structHash);
 
-        // client 서명 검증
+        // client 서명 검증, Contract Account의 서명 검증 지원
         bool isClientSigValid = SignatureChecker.isValidSignatureNow(_client, digest, _clientSignature);
         if (!isClientSigValid) revert InvalidSignature();
 
-        // deliverer 서명 검증
+        // deliverer 서명 검증, Contract Account의 서명 검증 지원
         bool isDelivererSigValid = SignatureChecker.isValidSignatureNow(_deliverer, digest, _delivererSignature);
         if (!isDelivererSigValid) revert InvalidSignature();
 

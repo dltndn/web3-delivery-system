@@ -27,6 +27,12 @@ contract TreasuryControllerImpl is UUPSUpgradeable, OwnableUpgradeable, Pausable
                             EXTERNAL FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
+    /**
+     * @dev 수익금 제출 오버라이딩 함수
+     * @param _token 수익금 제출 토큰 주소
+     * @param _amount 수익금 제출 토큰 수량
+     * @param _rewardRecipient 보상 수령자 (0일 시 보상 수령 없음)
+     */
     function submitRevenue(address _token, uint256 _amount, address _rewardRecipient) external override virtual whenNotPaused returns (bool success) {
         TreasuryControllerStorage.Data storage data_ = _treasuryControllerStorage();
 
@@ -98,7 +104,7 @@ contract TreasuryControllerImpl is UUPSUpgradeable, OwnableUpgradeable, Pausable
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @dev 도메인 수익금 정산 후 실행되는 함수
+     * @dev 도메인 수익금 정산 후 실행되는 오버라이딩 함수
      * @param _token 수익금 정산 토큰 주소
      * @param _amount 수익금 정산 토큰 수량
      * @param _rewardRecipient 보상 수령자 (0일 시 보상 수령 없음)
@@ -111,13 +117,16 @@ contract TreasuryControllerImpl is UUPSUpgradeable, OwnableUpgradeable, Pausable
         address sDelyToken = data_.sDelyToken;
         uint256 domainReward = data_.domainRewards[msg.sender];
 
+        // uniswapRouter에 토큰 사용 권한 부여
         bool successApproval = IERC20(_token).approve(uniswapRouter, _amount);
         if (!successApproval) revert ExternalCallFailed();
 
+        // 토큰 교환 경로 설정
         address[] memory path = new address[](2);
         path[0] = _token;
         path[1] = delyToken;
         
+        // 토큰 교환
         IV2SwapRouter(uniswapRouter).swapExactTokensForTokens(
             _amount,
             0,
@@ -125,6 +134,7 @@ contract TreasuryControllerImpl is UUPSUpgradeable, OwnableUpgradeable, Pausable
             sDelyToken
         );
 
+        // 도메인 보상 수령
         if (domainReward > 0 && _rewardRecipient != address(0)) {
             (bool successMint, ) = delyToken.call(
                 abi.encodeWithSignature("mint(address,uint256)", _rewardRecipient, domainReward)
@@ -134,6 +144,10 @@ contract TreasuryControllerImpl is UUPSUpgradeable, OwnableUpgradeable, Pausable
         }
     }
 
+    /**
+     * @dev 도메인 수익금 정산 권한을 확인하는 오버라이딩 함수
+     * @param _target 도메인 주소
+     */
     function _isAuthorized(address _target) internal view override virtual returns (bool isAuthorized) {
         TreasuryControllerStorage.Data storage data_ = _treasuryControllerStorage();
         isAuthorized = data_.trustedDomains[_target];
