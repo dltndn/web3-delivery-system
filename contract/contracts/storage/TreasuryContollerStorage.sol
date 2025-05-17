@@ -9,6 +9,7 @@ library TreasuryControllerStorage {
         address v2SwapRouter;
         address delyToken;
         address sDelyToken;
+        mapping(address => bool) trustedDomains;
         mapping(address => uint256) domainRewards;
     }
 

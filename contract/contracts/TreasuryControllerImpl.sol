@@ -12,17 +12,36 @@ import {ITreasuryController} from "./interface/ITreasuryController.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract TreasuryControllerImpl is UUPSUpgradeable, OwnableUpgradeable, ITreasuryController, RevenueManager {
-    struct Income {
-        address token;
-        uint256 amount;
-    }
 
     constructor() {
         _disableInitializers();
     }
 
-    function initialize(address _initialOwner) external initializer {
+    function initialize(address _initialOwner, address _v2SwapRouter, address _delyToken, address _sDelyToken) external initializer {
         __Ownable_init(_initialOwner);
+        setV2SwapRouter(_v2SwapRouter);
+        setDelyToken(_delyToken);
+        setSDelyToken(_sDelyToken);
+    }
+
+    function setV2SwapRouter(address _v2SwapRouter) external onlyOwner {
+        _treasuryControllerStorage().v2SwapRouter = _v2SwapRouter;
+    }
+
+    function setDelyToken(address _delyToken) external onlyOwner {
+        _treasuryControllerStorage().delyToken = _delyToken;
+    }
+
+    function setSDelyToken(address _sDelyToken) external onlyOwner {
+        _treasuryControllerStorage().sDelyToken = _sDelyToken;
+    }
+
+    function setTrustedDomain(address _domain, bool _trusted) external onlyOwner {
+        _treasuryControllerStorage().trustedDomains[_domain] = _trusted;
+    }
+
+    function setDomainReward(address _domain, uint256 _reward) external onlyOwner {
+        _treasuryControllerStorage().domainRewards[_domain] = _reward;
     }
 
     function supportsInterface(bytes4 interfaceId) public view override virtual returns (bool) {
