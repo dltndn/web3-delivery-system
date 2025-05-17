@@ -60,15 +60,15 @@ contract DeliveryImpl is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgr
      * @param _managerSignature 관리자 서명
      * @param _signatureExpiration 서명 만료 시간
      */
-    function requestOrder(uint256 _orderId, uint256 _orderPrice, address _manager, bytes calldata _managerSignature, uint256 _signatureExpiration) external override virtual whenNotPaused {
+    function requestOrder(uint256 _orderId, uint256 _orderPrice, address _manager, bytes calldata _managerSignature, uint256 _signatureExpiration) external virtual whenNotPaused {
         // manager 권한 확인
         if (!hasRole(MANAGER_ROLE, _manager)) revert Unauthorized();
         // 서명 만료 시간 확인
         if (block.timestamp > _signatureExpiration) revert ExpiredSignature();
-        // 주문 가격 확인
-        if (_orderPrice < data_.minOrderPrice) revert InvalidOrderPrice();
 
         DeliveryStorage.Data storage data_ = _deliveryStorage();
+        // 주문 가격 확인
+        if (_orderPrice < data_.minOrderPrice) revert InvalidOrderPrice();
         // 주문 상태 확인
         if (data_.orders[_orderId].status != DeliveryStorage.OrderStatus.NotRequested) revert AlreadyRequested();
 
@@ -84,8 +84,7 @@ contract DeliveryImpl is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgr
         );
         bytes32 digest = _hashTypedDataV4(structHash);
         // manager 서명 검증, Contract Account의 서명 검증 지원
-        bool isValid = SignatureChecker.isValidSignatureNow(_manager, digest, _managerSignature);
-        if (!isValid) revert InvalidSignature();
+        if (!SignatureChecker.isValidSignatureNow(_manager, digest, _managerSignature)) revert InvalidSignature();
 
         data_.orders[_orderId].client = _client;
         data_.orders[_orderId].price = _orderPrice;
@@ -93,8 +92,7 @@ contract DeliveryImpl is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgr
         data_.orders[_orderId].requestTime = block.timestamp;
         
         // 주문자에게 주문 가격 차감
-        bool transferSuccess = IERC20(data_.currencyToken).transferFrom(_client, address(this), _orderPrice);
-        if (!transferSuccess) revert ExternalCallFailed();
+        if (!IERC20(data_.currencyToken).transferFrom(_client, address(this), _orderPrice)) revert ExternalCallFailed();
 
         emit OrderRequested(_orderId, _client, _orderPrice);
     }
@@ -103,7 +101,7 @@ contract DeliveryImpl is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgr
      * @dev 주문 수락, 배송자 등록
      * @param _orderId 주문 ID
      */
-    function acceptOrder(uint256 _orderId) external override virtual whenNotPaused {
+    function acceptOrder(uint256 _orderId) external virtual whenNotPaused {
         DeliveryStorage.Data storage data_ = _deliveryStorage();
 
         address _deliverer = msg.sender;
@@ -127,7 +125,7 @@ contract DeliveryImpl is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgr
      * @param _clientSignature 주문자 서명
      * @param _delivererSignature 배송자 서명
      */
-    function completeOrder(uint256 _orderId, bytes calldata _clientSignature, bytes calldata _delivererSignature) external override virtual whenNotPaused {
+    function completeOrder(uint256 _orderId, bytes calldata _clientSignature, bytes calldata _delivererSignature) external virtual whenNotPaused {
         DeliveryStorage.Data storage data_ = _deliveryStorage();
         // 주문 상태 확인
         if (data_.orders[_orderId].status != DeliveryStorage.OrderStatus.Accepted) revert NotAccepted();
@@ -150,12 +148,10 @@ contract DeliveryImpl is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgr
         bytes32 digest = _hashTypedDataV4(structHash);
 
         // client 서명 검증, Contract Account의 서명 검증 지원
-        bool isClientSigValid = SignatureChecker.isValidSignatureNow(_client, digest, _clientSignature);
-        if (!isClientSigValid) revert InvalidSignature();
+        if (!SignatureChecker.isValidSignatureNow(_client, digest, _clientSignature)) revert InvalidSignature();
 
         // deliverer 서명 검증, Contract Account의 서명 검증 지원
-        bool isDelivererSigValid = SignatureChecker.isValidSignatureNow(_deliverer, digest, _delivererSignature);
-        if (!isDelivererSigValid) revert InvalidSignature();
+        if (!SignatureChecker.isValidSignatureNow(_deliverer, digest, _delivererSignature)) revert InvalidSignature();
 
         data_.orders[_orderId].status = DeliveryStorage.OrderStatus.Completed;
         data_.orders[_orderId].completeTime = _now;
@@ -163,12 +159,10 @@ contract DeliveryImpl is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgr
         // 플랫폼 이용 수수료 계산
         uint256 _fee = (_orderPrice * data_.feeRate) / 10000;
         // 수수료 제출
-        bool submitSuccess = IRevenueManager(data_.treasuryController).submitRevenue(_currencyToken, _fee, _deliverer);
-        if (!submitSuccess) revert ExternalCallFailed();
+        if (!IRevenueManager(data_.treasuryController).submitRevenue(_currencyToken, _fee, _deliverer)) revert ExternalCallFailed();
 
         // 배송자에게 의뢰금 전달
-        bool transferSuccess = IERC20(_currencyToken).transfer(_deliverer, _orderPrice - _fee);
-        if (!transferSuccess) revert ExternalCallFailed();
+        if (!IERC20(_currencyToken).transfer(_deliverer, _orderPrice - _fee)) revert ExternalCallFailed();
 
         emit OrderCompleted(_orderId, _now);
     }
@@ -177,7 +171,7 @@ contract DeliveryImpl is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgr
      * @dev 주문 취소
      * @param _orderId 주문 ID
      */
-    function cancelOrder(uint256 _orderId) external override virtual whenNotPaused {
+    function cancelOrder(uint256 _orderId) external virtual whenNotPaused {
         DeliveryStorage.Data storage data_ = _deliveryStorage();
         
         DeliveryStorage.OrderStatus _status = data_.orders[_orderId].status;
@@ -203,34 +197,61 @@ contract DeliveryImpl is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgr
         emit OrderCancelled(_orderId, _client);
     }
 
-    function setTreasuryController(address _treasuryController) external override virtual onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setTreasuryController(address _treasuryController) external virtual onlyRole(DEFAULT_ADMIN_ROLE) {
         DeliveryStorage.Data storage data_ = _deliveryStorage();
         data_.treasuryController = _treasuryController;
     }
 
-    function setCurrencyToken(address _currencyToken) external override virtual onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setCurrencyToken(address _currencyToken) external virtual onlyRole(DEFAULT_ADMIN_ROLE) {
         DeliveryStorage.Data storage data_ = _deliveryStorage();
         data_.currencyToken = _currencyToken;
     }
 
-    function setFeeRate(uint256 _feeRate) external override virtual onlyRole(GOVERNOR_ROLE) {
+    function setFeeRate(uint256 _feeRate) external virtual onlyRole(GOVERNOR_ROLE) {
         DeliveryStorage.Data storage data_ = _deliveryStorage();
         data_.feeRate = _feeRate;
     }
 
-    function setMinOrderPrice(uint256 _minOrderPrice) external override virtual onlyRole(GOVERNOR_ROLE) {
+    function setMinOrderPrice(uint256 _minOrderPrice) external virtual onlyRole(GOVERNOR_ROLE) {
         DeliveryStorage.Data storage data_ = _deliveryStorage();
         data_.minOrderPrice = _minOrderPrice;
     }
 
-    function setRegisteredDeliverer(address _deliverer, bool _registered) external override virtual onlyRole(MANAGER_ROLE) {
+    function setRegisteredDeliverer(address _deliverer, bool _registered) external virtual onlyRole(MANAGER_ROLE) {
         DeliveryStorage.Data storage data_ = _deliveryStorage();
         data_.registeredDeliverers[_deliverer] = _registered;
     }
 
+    function getTreasuryController() external view virtual returns (address) {
+        DeliveryStorage.Data storage data_ = _deliveryStorage();
+        return data_.treasuryController;
+    }
+
+    function getCurrencyToken() external view virtual returns (address) {
+        DeliveryStorage.Data storage data_ = _deliveryStorage();    
+        return data_.currencyToken;
+    }
+
+    function getFeeRate() external view virtual returns (uint256) {
+        DeliveryStorage.Data storage data_ = _deliveryStorage();
+        return data_.feeRate;
+    }
+
+    function getMinOrderPrice() external view virtual returns (uint256) {
+        DeliveryStorage.Data storage data_ = _deliveryStorage();
+        return data_.minOrderPrice;
+    }
+
+    function getRegisteredDeliverers(address _deliverer) external view virtual returns (bool) {    
+        DeliveryStorage.Data storage data_ = _deliveryStorage();
+        return data_.registeredDeliverers[_deliverer];
+    }        
+
     /*//////////////////////////////////////////////////////////////
                             INTERNAL FUNCTIONS
     //////////////////////////////////////////////////////////////*/
+
+    function _authorizeUpgrade(address) internal override onlyRole(DEFAULT_ADMIN_ROLE) {}
 
     function _deliveryStorage() internal pure returns (DeliveryStorage.Data storage data_) {
         data_ = DeliveryStorage.data();

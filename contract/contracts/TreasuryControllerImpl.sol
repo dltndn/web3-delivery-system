@@ -27,22 +27,6 @@ contract TreasuryControllerImpl is UUPSUpgradeable, OwnableUpgradeable, Pausable
                             EXTERNAL FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
-    /**
-     * @dev 수익금 제출 오버라이딩 함수
-     * @param _token 수익금 제출 토큰 주소
-     * @param _amount 수익금 제출 토큰 수량
-     * @param _rewardRecipient 보상 수령자 (0일 시 보상 수령 없음)
-     */
-    function submitRevenue(address _token, uint256 _amount, address _rewardRecipient) external override virtual whenNotPaused returns (bool success) {
-        TreasuryControllerStorage.Data storage data_ = _treasuryControllerStorage();
-
-        if (data_.v2SwapRouter == address(0)) revert NotInitializing();
-        if (data_.delyToken == address(0)) revert NotInitializing();
-        if (data_.sDelyToken == address(0)) revert NotInitializing();
-
-        return super.submitRevenue(_token, _amount, _rewardRecipient);
-    }
-
     function pause() external onlyOwner {
         _pause();
     }
@@ -102,6 +86,19 @@ contract TreasuryControllerImpl is UUPSUpgradeable, OwnableUpgradeable, Pausable
     /*//////////////////////////////////////////////////////////////
                             INTERNAL FUNCTIONS
     //////////////////////////////////////////////////////////////*/
+
+    /**
+     * @dev 도메인 수익금 정산 전 실행되는 오버라이딩 함수
+     * @param _token 수익금 제출 토큰 주소
+     * @param _amount 수익금 제출 토큰 수량
+     * @param _rewardRecipient 보상 수령자 (0일 시 보상 수령 없음)
+     */
+    function _beforeSubmitRevenue(address _token, uint256 _amount, address _rewardRecipient) internal override virtual whenNotPaused {
+        TreasuryControllerStorage.Data storage data_ = _treasuryControllerStorage();
+        if (data_.v2SwapRouter == address(0)) revert NotInitializing();
+        if (data_.delyToken == address(0)) revert NotInitializing();
+        if (data_.sDelyToken == address(0)) revert NotInitializing();
+    }
 
     /**
      * @dev 도메인 수익금 정산 후 실행되는 오버라이딩 함수

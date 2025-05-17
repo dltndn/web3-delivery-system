@@ -27,12 +27,13 @@ interface IDelivery {
     error NotAccepted();
     error NotCompleted();
     error NotCancelled();
+    error ExternalCallFailed();
     
     /*//////////////////////////////////////////////////////////////
                                     FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
-    function requestOrder(uint256 _orderId, bytes calldata _managerSignature) external;
+    function requestOrder(uint256 _orderId, uint256 _orderPrice, address _manager, bytes calldata _managerSignature, uint256 _signatureExpiration) external;
     function acceptOrder(uint256 _orderId) external;
     function completeOrder(uint256 _orderId, bytes calldata _clientSignature, bytes calldata _delivererSignature) external;
     function cancelOrder(uint256 _orderId) external;
