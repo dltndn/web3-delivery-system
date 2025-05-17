@@ -3,6 +3,7 @@ pragma solidity ^0.8.23;
 
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import {RevenueManager} from "./RevenueManager.sol";
 import {TreasuryControllerStorage} from "./storage/TreasuryContollerStorage.sol";
@@ -11,7 +12,7 @@ import {IV2SwapRouter} from "@uniswap/swap-router-contracts/contracts/interfaces
 import {ITreasuryController} from "./interface/ITreasuryController.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-contract TreasuryControllerImpl is UUPSUpgradeable, OwnableUpgradeable, ITreasuryController, RevenueManager {
+contract TreasuryControllerImpl is UUPSUpgradeable, OwnableUpgradeable, PausableUpgradeable, ITreasuryController, RevenueManager {
 
     constructor() {
         _disableInitializers();
@@ -19,13 +20,14 @@ contract TreasuryControllerImpl is UUPSUpgradeable, OwnableUpgradeable, ITreasur
 
     function initialize(address _initialOwner) external initializer {
         __Ownable_init(_initialOwner);
+        __Pausable_init();
     }
 
     /*//////////////////////////////////////////////////////////////
                             EXTERNAL FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
-    function submitRevenue(address _token, uint256 _amount, address _rewardRecipient) external override virtual onlyAuthorized returns (bool success) {
+    function submitRevenue(address _token, uint256 _amount, address _rewardRecipient) external override virtual whenNotPaused returns (bool success) {
         TreasuryControllerStorage.Data storage data_ = _treasuryControllerStorage();
 
         if (data_.v2SwapRouter == address(0)) revert NotInitializing();
@@ -33,6 +35,14 @@ contract TreasuryControllerImpl is UUPSUpgradeable, OwnableUpgradeable, ITreasur
         if (data_.sDelyToken == address(0)) revert NotInitializing();
 
         return super.submitRevenue(_token, _amount, _rewardRecipient);
+    }
+
+    function pause() external onlyOwner {
+        _pause();
+    }
+
+    function unpause() external onlyOwner {
+        _unpause();
     }
 
     function setV2SwapRouter(address _v2SwapRouter) external onlyOwner {
