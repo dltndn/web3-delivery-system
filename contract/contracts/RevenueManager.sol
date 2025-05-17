@@ -28,7 +28,7 @@ abstract contract RevenueManager is IRevenueManager, ERC165 {
      * @param _amount 수익금 정산 토큰 수량
      * @param _rewardRecipient 보상 수령자 (0일 시 보상 수령 없음)
      */
-    function submitRevenue(address _token, uint256 _amount, address _rewardRecipient) external onlyAuthorized returns (bool success) {
+    function submitRevenue(address _token, uint256 _amount, address _rewardRecipient) external virtual onlyAuthorized returns (bool success) {
         _beforeSubmitRevenue(_token, _amount, _rewardRecipient);
         
         bool successTransfer = IERC20(_token).transferFrom(msg.sender, address(this), _amount);

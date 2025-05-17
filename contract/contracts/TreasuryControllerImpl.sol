@@ -17,36 +17,67 @@ contract TreasuryControllerImpl is UUPSUpgradeable, OwnableUpgradeable, ITreasur
         _disableInitializers();
     }
 
-    function initialize(address _initialOwner, address _v2SwapRouter, address _delyToken, address _sDelyToken) external initializer {
+    function initialize(address _initialOwner) external initializer {
         __Ownable_init(_initialOwner);
-        setV2SwapRouter(_v2SwapRouter);
-        setDelyToken(_delyToken);
-        setSDelyToken(_sDelyToken);
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                            EXTERNAL FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
+
+    function submitRevenue(address _token, uint256 _amount, address _rewardRecipient) external override virtual onlyAuthorized returns (bool success) {
+        TreasuryControllerStorage.Data storage data_ = _treasuryControllerStorage();
+
+        if (data_.v2SwapRouter == address(0)) revert NotInitializing();
+        if (data_.delyToken == address(0)) revert NotInitializing();
+        if (data_.sDelyToken == address(0)) revert NotInitializing();
+
+        return super.submitRevenue(_token, _amount, _rewardRecipient);
+    }
+
+    function setV2SwapRouter(address _v2SwapRouter) external onlyOwner {
+        _treasuryControllerStorage().v2SwapRouter = _v2SwapRouter;
+    }
+
+    function setDelyToken(address _delyToken) external onlyOwner {
+        _treasuryControllerStorage().delyToken = _delyToken;
+    }
+
+    function setSDelyToken(address _sDelyToken) external onlyOwner {
+        _treasuryControllerStorage().sDelyToken = _sDelyToken;
+    }
+
+    function setTrustedDomain(address _domain, bool _trusted) external onlyOwner {
+        _treasuryControllerStorage().trustedDomains[_domain] = _trusted;
+    }
+
+    function setDomainReward(address _domain, uint256 _reward) external onlyOwner {
+        _treasuryControllerStorage().domainRewards[_domain] = _reward;
+    }
+
+    function getV2SwapRouter() external view returns (address) {
+        return _treasuryControllerStorage().v2SwapRouter;
+    }
+
+    function getDelyToken() external view returns (address) {
+        return _treasuryControllerStorage().delyToken;
+    }
+
+    function getSDelyToken() external view returns (address) {
+        return _treasuryControllerStorage().sDelyToken;
+    }
+
+    function getTrustedDomain(address _domain) external view returns (bool) {
+        return _treasuryControllerStorage().trustedDomains[_domain];
+    }
+
+    function getDomainReward(address _domain) external view returns (uint256) {
+        return _treasuryControllerStorage().domainRewards[_domain];
     }
 
     /*//////////////////////////////////////////////////////////////
                             PUBLIC FUNCTIONS
     //////////////////////////////////////////////////////////////*/
-
-    function setV2SwapRouter(address _v2SwapRouter) public onlyOwner {
-        _treasuryControllerStorage().v2SwapRouter = _v2SwapRouter;
-    }
-
-    function setDelyToken(address _delyToken) public onlyOwner {
-        _treasuryControllerStorage().delyToken = _delyToken;
-    }
-
-    function setSDelyToken(address _sDelyToken) public onlyOwner {
-        _treasuryControllerStorage().sDelyToken = _sDelyToken;
-    }
-
-    function setTrustedDomain(address _domain, bool _trusted) public onlyOwner {
-        _treasuryControllerStorage().trustedDomains[_domain] = _trusted;
-    }
-
-    function setDomainReward(address _domain, uint256 _reward) public onlyOwner {
-        _treasuryControllerStorage().domainRewards[_domain] = _reward;
-    }
 
     function supportsInterface(bytes4 interfaceId) public view override virtual returns (bool) {
         return interfaceId == type(ITreasuryController).interfaceId || super.supportsInterface(interfaceId);
