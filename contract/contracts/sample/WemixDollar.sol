@@ -5,9 +5,7 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 contract WemixDollar is ERC20, Ownable {
-    constructor() ERC20("WEMIX$", "WEMIX$") Ownable(msg.sender) {
-        _mint(msg.sender, 10000 ether);
-    }
+    constructor() ERC20("WEMIX$", "WEMIX$") Ownable(msg.sender) {}
 
     function mint(address to, uint256 amount) external onlyOwner {
         _mint(to, amount);

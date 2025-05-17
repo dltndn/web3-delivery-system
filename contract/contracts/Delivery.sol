@@ -6,7 +6,7 @@ import {IBeacon} from "@openzeppelin/contracts/proxy/beacon/IBeacon.sol";
 
 contract Delivery is ERC1967Proxy, IBeacon {
 
-    constructor(address _imp, bytes memory _data) ERC1967Proxy(_imp, _data){}
+    constructor(address _implementation, bytes memory _data) ERC1967Proxy(_implementation, _data){}
 
     function implementation() external override view returns(address){
         return _implementation();

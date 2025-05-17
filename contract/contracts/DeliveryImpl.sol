@@ -14,8 +14,6 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IRevenueManager} from "./interface/IRevenueManager.sol";
 import {IDelivery} from "./interface/IDelivery.sol";
 
-
-
 contract DeliveryImpl is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgradeable, EIP712Upgradeable, MulticallUpgradeable, IDelivery {
 
     // keccak256("GOVERNOR_ROLE")
@@ -32,6 +30,13 @@ contract DeliveryImpl is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgr
     }
 
     function initialize(address _initialOwner, address _governor, address _manager, address _treasuryController, address _currencyToken, uint256 _feeRate, uint256 _minOrderPrice) external initializer {
+        if (_initialOwner == address(0)) revert InvalidAddress();
+        if (_governor == address(0)) revert InvalidAddress();
+        if (_manager == address(0)) revert InvalidAddress();
+        if (_treasuryController == address(0)) revert InvalidAddress();
+        if (_currencyToken == address(0)) revert InvalidAddress();
+        if (_feeRate > 10000) revert InvalidFeeRate();
+
         __AccessControl_init();
         _grantRole(DEFAULT_ADMIN_ROLE, _initialOwner);
         _grantRole(GOVERNOR_ROLE, _governor);
@@ -42,7 +47,7 @@ contract DeliveryImpl is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgr
         __Multicall_init();
 
         IERC20(_currencyToken).approve(_treasuryController, type(uint256).max);
-
+        
         DeliveryStorage.Data storage data_ = _deliveryStorage();
         data_.treasuryController = _treasuryController;
         data_.currencyToken = _currencyToken;
@@ -200,17 +205,20 @@ contract DeliveryImpl is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgr
     }
 
     function setTreasuryController(address _treasuryController) external virtual onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (_treasuryController == address(0)) revert InvalidAddress();
         DeliveryStorage.Data storage data_ = _deliveryStorage();
         data_.treasuryController = _treasuryController;
     }
 
     function setCurrencyToken(address _currencyToken) external virtual onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (_currencyToken == address(0)) revert InvalidAddress();
         DeliveryStorage.Data storage data_ = _deliveryStorage();
         IERC20(_currencyToken).approve(data_.treasuryController, type(uint256).max);
         data_.currencyToken = _currencyToken;
     }
 
     function setFeeRate(uint256 _feeRate) external virtual onlyRole(GOVERNOR_ROLE) {
+        if (_feeRate > 10000) revert InvalidFeeRate();
         DeliveryStorage.Data storage data_ = _deliveryStorage();
         data_.feeRate = _feeRate;
     }

@@ -15,9 +15,11 @@ interface IDelivery {
                                     ERRORS
     //////////////////////////////////////////////////////////////*/
 
+    error InvalidAddress();
     error Unauthorized();
     error InvalidSignature();
     error InvalidOrderPrice();
+    error InvalidFeeRate();
     error ExpiredSignature();
     error AlreadyRequested();
     error SelfAccept();

@@ -19,6 +19,7 @@ contract TreasuryControllerImpl is UUPSUpgradeable, OwnableUpgradeable, Pausable
     }
 
     function initialize(address _initialOwner) external initializer {
+        if (_initialOwner == address(0)) revert InvalidAddress();
         __Ownable_init(_initialOwner);
         __Pausable_init();
     }
@@ -36,18 +37,22 @@ contract TreasuryControllerImpl is UUPSUpgradeable, OwnableUpgradeable, Pausable
     }
 
     function setV2SwapRouter(address _v2SwapRouter) external onlyOwner {
+        if (_v2SwapRouter == address(0)) revert InvalidAddress();
         _treasuryControllerStorage().v2SwapRouter = _v2SwapRouter;
     }
 
     function setDelyToken(address _delyToken) external onlyOwner {
+        if (_delyToken == address(0)) revert InvalidAddress();
         _treasuryControllerStorage().delyToken = _delyToken;
     }
 
     function setSDelyToken(address _sDelyToken) external onlyOwner {
+        if (_sDelyToken == address(0)) revert InvalidAddress();
         _treasuryControllerStorage().sDelyToken = _sDelyToken;
     }
 
     function setTrustedDomain(address _domain, bool _trusted) external onlyOwner {
+        if (_domain == address(0)) revert InvalidAddress();
         _treasuryControllerStorage().trustedDomains[_domain] = _trusted;
     }
 
