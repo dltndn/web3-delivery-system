@@ -41,6 +41,8 @@ contract DeliveryImpl is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgr
         __EIP712_init("Delivery", "1");
         __Multicall_init();
 
+        IERC20(_currencyToken).approve(_treasuryController, type(uint256).max);
+
         DeliveryStorage.Data storage data_ = _deliveryStorage();
         data_.treasuryController = _treasuryController;
         data_.currencyToken = _currencyToken;
@@ -203,6 +205,7 @@ contract DeliveryImpl is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgr
     }
 
     function setCurrencyToken(address _currencyToken) external virtual onlyRole(DEFAULT_ADMIN_ROLE) {
+        IERC20(_currencyToken).approve(data_.treasuryController, type(uint256).max);
         DeliveryStorage.Data storage data_ = _deliveryStorage();
         data_.currencyToken = _currencyToken;
     }
