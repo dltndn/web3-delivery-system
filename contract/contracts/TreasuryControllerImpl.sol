@@ -24,23 +24,27 @@ contract TreasuryControllerImpl is UUPSUpgradeable, OwnableUpgradeable, ITreasur
         setSDelyToken(_sDelyToken);
     }
 
-    function setV2SwapRouter(address _v2SwapRouter) external onlyOwner {
+    /*//////////////////////////////////////////////////////////////
+                            PUBLIC FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
+
+    function setV2SwapRouter(address _v2SwapRouter) public onlyOwner {
         _treasuryControllerStorage().v2SwapRouter = _v2SwapRouter;
     }
 
-    function setDelyToken(address _delyToken) external onlyOwner {
+    function setDelyToken(address _delyToken) public onlyOwner {
         _treasuryControllerStorage().delyToken = _delyToken;
     }
 
-    function setSDelyToken(address _sDelyToken) external onlyOwner {
+    function setSDelyToken(address _sDelyToken) public onlyOwner {
         _treasuryControllerStorage().sDelyToken = _sDelyToken;
     }
 
-    function setTrustedDomain(address _domain, bool _trusted) external onlyOwner {
+    function setTrustedDomain(address _domain, bool _trusted) public onlyOwner {
         _treasuryControllerStorage().trustedDomains[_domain] = _trusted;
     }
 
-    function setDomainReward(address _domain, uint256 _reward) external onlyOwner {
+    function setDomainReward(address _domain, uint256 _reward) public onlyOwner {
         _treasuryControllerStorage().domainRewards[_domain] = _reward;
     }
 
@@ -48,6 +52,16 @@ contract TreasuryControllerImpl is UUPSUpgradeable, OwnableUpgradeable, ITreasur
         return interfaceId == type(ITreasuryController).interfaceId || super.supportsInterface(interfaceId);
     }
 
+    /*//////////////////////////////////////////////////////////////
+                            INTERNAL FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
+
+    /**
+     * @dev 도메인 수익금 정산 후 실행되는 함수
+     * @param _token 수익금 정산 토큰 주소
+     * @param _amount 수익금 정산 토큰 수량
+     * @param _rewardRecipient 보상 수령자 (0일 시 보상 수령 없음)
+     */
     function _afterSubmitRevenue(address _token, uint256 _amount, address _rewardRecipient) internal override virtual {
         TreasuryControllerStorage.Data storage data_ = _treasuryControllerStorage();
 
@@ -70,13 +84,18 @@ contract TreasuryControllerImpl is UUPSUpgradeable, OwnableUpgradeable, ITreasur
             sDelyToken
         );
 
-        if (domainReward > 0) {
+        if (domainReward > 0 && _rewardRecipient != address(0)) {
             (bool successMint, ) = delyToken.call(
                 abi.encodeWithSignature("mint(address,uint256)", _rewardRecipient, domainReward)
             );
             if (!successMint) revert ExternalCallFailed();
             emit GrantReward(_rewardRecipient, domainReward);
         }
+    }
+
+    function _isAuthorized(address _target) internal view override virtual returns (bool isAuthorized) {
+        TreasuryControllerStorage.Data storage data_ = _treasuryControllerStorage();
+        isAuthorized = data_.trustedDomains[_target];
     }
 
     function _authorizeUpgrade(address) internal override onlyOwner {}

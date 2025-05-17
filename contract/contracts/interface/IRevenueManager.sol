@@ -14,6 +14,7 @@ interface IRevenueManager {
 
     error NotImplemented();
     error ExternalCallFailed();
+    error NotAuthorized();
 
     /*//////////////////////////////////////////////////////////////
                                 FUNCTIONS
