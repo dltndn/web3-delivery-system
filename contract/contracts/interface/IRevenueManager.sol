@@ -1,0 +1,23 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.23;
+
+interface IRevenueManager {
+    /*//////////////////////////////////////////////////////////////
+                                EVENTS
+    //////////////////////////////////////////////////////////////*/
+
+    event RevenueSubmitted(address indexed token, uint256 amount, address indexed sender);
+
+    /*//////////////////////////////////////////////////////////////
+                                ERRORS
+    //////////////////////////////////////////////////////////////*/
+
+    error NotImplemented();
+    error ExternalCallFailed();
+
+    /*//////////////////////////////////////////////////////////////
+                                FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
+
+    function submitRevenue(address _token, uint256 _amount, address _rewardRecipient) external returns (bool success);
+}
