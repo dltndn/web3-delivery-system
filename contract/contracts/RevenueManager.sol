@@ -12,7 +12,7 @@ abstract contract RevenueManager is IRevenueManager, ERC165 {
     //////////////////////////////////////////////////////////////*/
 
     modifier onlyAuthorized() {
-        if (!_isAuthorized(msg.sender)) revert NotAuthorized();
+        if (!_isAuthorized(msg.sender)) revert Unauthorized();
         _;
     }
 
