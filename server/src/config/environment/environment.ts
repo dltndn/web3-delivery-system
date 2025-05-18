@@ -45,4 +45,14 @@ export class Environment {
     PROTOCOL: process.env.REDIS_PROTOCOL,
   });
 
+  @ValidateNested()
+  @Type(() => RabbitMQConfig)
+  RABBITMQ: RabbitMQConfig = plainToClass(RabbitMQConfig, {
+    PROTOCOL: process.env.RABBIT_MQ_PROTOCOL,
+    HOST: process.env.RABBIT_MQ_HOST,
+    ID: process.env.RABBIT_MQ_ID,
+    PASSWORD: process.env.RABBIT_MQ_PASSWORD,
+    ENVIRONMENT: process.env.RABBIT_MQ_ENVIRONMENT,
+    PORT: Number(process.env.RABBIT_MQ_PORT),
+  });
 }
