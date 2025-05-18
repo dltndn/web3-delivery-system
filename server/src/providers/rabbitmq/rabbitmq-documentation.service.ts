@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
-import { Config } from 'src/config/environment/config';
+import { Config } from '../../config/environment/config';
 import 'reflect-metadata';
 import { getProperties } from '../../core/decorator/rabbitmq-property.decorator';
 import { QUEUE } from './constants/queue.constants';

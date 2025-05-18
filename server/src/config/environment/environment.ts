@@ -2,27 +2,7 @@ import { Type, plainToClass } from 'class-transformer';
 import { IsIn, IsNumber, IsString, ValidateNested } from 'class-validator';
 import { DatabaseConfig } from './configs/database.config';
 import { RedisConfig } from './configs/redis.config';
-import { SwaggerConfig } from './configs/swagger.config';
-
-export class RabbitMQConfig {
-  @IsString()
-  PROTOCOL: string;
-
-  @IsString()
-  HOST: string;
-
-  @IsString()
-  ID: string;
-
-  @IsString()
-  PASSWORD: string;
-
-  @IsString()
-  ENVIRONMENT: string;
-
-  @IsNumber()
-  PORT: number;
-}
+import { RabbitMQConfig } from './configs/rabbitmq.config';
 
 export class Environment {
   @IsIn(['production', 'test', 'development'])
@@ -40,13 +20,6 @@ export class Environment {
   @Type(() => Number)
   @IsNumber()
   SERVER_PORT = process.env?.SERVER_PORT ? Number(process.env.SERVER_PORT) : 12195;
-
-  @ValidateNested()
-  @Type(() => SwaggerConfig)
-  swagger: SwaggerConfig = plainToClass(SwaggerConfig, {
-    user: process.env.SWAGGER_USER,
-    password: process.env.SWAGGER_PASSWORD,
-  });
 
   @ValidateNested()
   @Type(() => DatabaseConfig)

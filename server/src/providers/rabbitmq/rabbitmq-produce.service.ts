@@ -14,7 +14,7 @@ export type RoutingKeyToType<
 
 @Injectable()
 export class RabbitmqProduceService {
-  constructor(private readonly logger: any) {}
+  constructor() {}
 
   async assertExchange() {
     // produce
@@ -45,7 +45,7 @@ export class RabbitmqProduceService {
 
       RabbitmqService.channel.publish(exchange, routingKey, messageBuffer);
     } catch (error) {
-      this.logger.error(error);
+      console.error(error);
     }
   }
 }

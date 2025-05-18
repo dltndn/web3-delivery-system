@@ -8,7 +8,7 @@ import {
     Query,
   } from '@nestjs/common';
 import { PollingV1Service } from './polling-v1.service';
-import { CatchErrors } from 'src/core/decorator/catch-errors.decorator';
+import { CatchErrors } from '../../../core/decorator/catch-errors.decorator';
 import { ContractEventsReqParamsDto } from './dtos/polling-v1-req.dto';
 
 @Controller('v1/polling')

@@ -1,4 +1,4 @@
-import { Config } from 'src/config/environment/config';
+import { Config } from '../../../config/environment/config';
 
 const environment = Config.getEnvironment().SERVER_ENVIRONMENT_ID.toUpperCase();
 

@@ -1,8 +1,8 @@
 import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { RabbitmqProduceService } from '../../../providers/rabbitmq/rabbitmq-produce.service';
 import { PRODUCE_BIND } from '../../../providers/rabbitmq/constants/produce-bind.constants';
-import { RedisService } from 'src/providers/redis/redis.service';
-import { ORDER_STATUS, ORDER_STATUS_MAP } from 'src/domains/order/constants';
+import { RedisService } from '../../../providers/redis/redis.service';
+import { ORDER_STATUS, ORDER_STATUS_MAP } from '../../order/constants';
 
 @Injectable()
 export class PollingV1Service {

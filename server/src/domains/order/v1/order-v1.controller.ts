@@ -9,10 +9,10 @@ import {
   } from '@nestjs/common';
 import { OrderV1Service } from './order-v1.service';
 import { OrdersReqParamsDto } from './dtos/order-v1-req.dto';
-import { CatchErrors } from 'src/core/decorator/catch-errors.decorator';
-import { RabbitmqSubscribe } from 'src/core/decorator/rabbitmq.decorator';
-import { PRODUCE_BIND } from 'src/providers/rabbitmq/constants/produce-bind.constants';
-import { OrderCompleteRmqDto } from 'src/providers/rabbitmq/dtos/rabbitmq.dto';
+import { CatchErrors } from '../../../core/decorator/catch-errors.decorator';
+import { RabbitmqSubscribe } from '../../../core/decorator/rabbitmq.decorator';
+import { PRODUCE_BIND } from '../../../providers/rabbitmq/constants/produce-bind.constants';
+import { OrderCompleteRmqDto } from '../../../providers/rabbitmq/dtos/rabbitmq.dto';
 
 @Controller('v1/orders')
 export class OrderV1Controller {

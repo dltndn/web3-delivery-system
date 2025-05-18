@@ -1,12 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { OrderRepository } from './repositories/mysql/order-v1.repository';
-import { RabbitmqProduceService } from '../../../providers/rabbitmq/rabbitmq-produce.service';
 import { PRODUCE_BIND } from '../../../providers/rabbitmq/constants/produce-bind.constants';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { RedisService } from 'src/providers/redis/redis.service';
+import { RedisService } from '../../../providers/redis/redis.service';
 import { ORDER_STATUS, ORDER_STATUS_MAP } from '../constants';
-import { OrderCompleteRmqDto } from 'src/providers/rabbitmq/dtos/rabbitmq.dto';
+import { OrderCompleteRmqDto } from '../../../providers/rabbitmq/dtos/rabbitmq.dto';
 
 @Injectable()
 export class OrderV1Service {
@@ -15,7 +14,6 @@ export class OrderV1Service {
     private readonly connection1: DataSource,
     private readonly orderRepository: OrderRepository,
     private readonly redisService: RedisService,
-    private readonly rabbitmqProducerService: RabbitmqProduceService,
   ) {}
 
   async getOrder(orderId: number) {

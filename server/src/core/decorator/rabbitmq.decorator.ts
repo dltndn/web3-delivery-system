@@ -5,7 +5,7 @@ import {
   UsePipes,
 } from '@nestjs/common';
 import { EventPattern } from '@nestjs/microservices';
-import { RabbitMQInterceptor } from 'src/interceptors/rabbitmq.interceptor';
+import { RabbitMQInterceptor } from '../../interceptors/rabbitmq.interceptor';
 
 export function RabbitmqSubscribe(routingKey: string) {
   const decorators = [];
