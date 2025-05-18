@@ -1,6 +1,6 @@
 export const EXCHANGE = {
-  ORDER_DIRECT_EXCHANGE: {
-    name: 'ORDER_DIRECT_EXCHANGE',
+  COMPLETE_ORDER_DIRECT_EXCHANGE: {
+    name: 'COMPLETE_ORDER_DIRECT_EXCHANGE',
     type: 'direct',
   },
 };
