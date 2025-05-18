@@ -21,9 +21,9 @@ contract DeliveryImpl is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgr
     // keccak256("MANAGER_ROLE")
     bytes32 public constant MANAGER_ROLE = 0x241ecf16d79d0f8dbfb92cbc07fe17840425976cf0667f022fe9877caa831b08;
     bytes32 public constant REQUEST_ORDER_TYPEHASH =
-        keccak256("REQUEST_ORDER_TYPEHASH(address client,uint256 orderId, uint256 expiration)");
+        keccak256("RequestOrder(address client,uint256 orderId,uint256 expiration)");
     bytes32 public constant COMPLETE_ORDER_TYPEHASH =
-        keccak256("COMPLETE_ORDER_TYPEHASH(address client,address deliverer,uint256 orderId)");
+        keccak256("CompleteOrder(address client,address deliverer,uint256 orderId)");
     
     constructor() {
         _disableInitializers();
@@ -80,7 +80,7 @@ contract DeliveryImpl is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgr
         if (data_.orders[_orderId].status != DeliveryStorage.OrderStatus.NotRequested) revert AlreadyRequested();
 
         address _client = msg.sender;
-
+        
         bytes32 structHash = keccak256(
             abi.encode(
                 REQUEST_ORDER_TYPEHASH,
@@ -256,7 +256,12 @@ contract DeliveryImpl is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgr
     function getRegisteredDeliverers(address _deliverer) external view virtual returns (bool) {    
         DeliveryStorage.Data storage data_ = _deliveryStorage();
         return data_.registeredDeliverers[_deliverer];
-    }        
+    }
+
+    function getOrder(uint256 _orderId) external view virtual returns (DeliveryStorage.Order memory) {
+        DeliveryStorage.Data storage data_ = _deliveryStorage();
+        return data_.orders[_orderId];
+    }
 
     /*//////////////////////////////////////////////////////////////
                             INTERNAL FUNCTIONS
