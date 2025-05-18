@@ -1,19 +1,11 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-
 import { InjectRedis } from '@nestjs-modules/ioredis';
 import { Cluster, Redis } from 'ioredis';
-import { Logger } from '../../config/logger/logger.service';
-import { SlackService } from '../slack/slack.service';
-import { Config } from 'src/config/environment/config';
-
-const slackWebHookUrl = Config.getEnvironment().slack.webHookUrl;
 
 @Injectable()
 export class RedisService implements OnModuleInit {
   constructor(
-    private readonly logger: Logger,
     @InjectRedis() private readonly redis: Redis | Cluster,
-    private readonly slackService: SlackService,
   ) {}
 
   async onModuleInit() {
@@ -24,17 +16,11 @@ export class RedisService implements OnModuleInit {
     this.redis.on('error', (err) => {
       this.redisErrorHandler(err);
     });
-    this.logger.log('Redis Connected');
+    console.log('Redis Connected');
   }
 
   private redisErrorHandler(err) {
-    this.logger.error('Redis Client Error', err),
-      this.slackService.sendMessage(slackWebHookUrl, {
-        text: 'Redis Client Error',
-        username: 'aws Slack Alert Bot',
-        icon_emoji: ':ghost:',
-        channel: '#sample2',
-      });
+    console.error('Redis Client Error', err);
   }
 
   getClient(): Redis | Cluster {
