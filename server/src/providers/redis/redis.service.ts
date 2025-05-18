@@ -39,4 +39,28 @@ export class RedisService implements OnModuleInit {
     }
     return result;
   }
+
+  /**
+   * orderId를 키로 사용하여 status 값을 저장합니다.
+   * @param orderId 오더 ID
+   * @param status 저장할 상태 값
+   * @param expireTime 만료 시간(초), 기본값은 1시간
+   * @returns 저장 성공 시 'OK'
+   */
+  async saveOrderStatus(orderId: string | number, status: string, expireTime: number = 3600): Promise<'OK'> {
+    const key = `order:${orderId}:status`;
+    await this.redis.set(key, status);
+    await this.redis.expire(key, expireTime);
+    return 'OK';
+  }
+
+  /**
+   * orderId로 저장된 status 값을 조회합니다.
+   * @param orderId 오더 ID
+   * @returns 저장된 status 값, 없으면 null
+   */
+  async getOrderStatus(orderId: string | number): Promise<string | null> {
+    const key = `order:${orderId}:status`;
+    return await this.redis.get(key);
+  }
 }

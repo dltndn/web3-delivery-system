@@ -4,6 +4,26 @@ import { DatabaseConfig } from './configs/database.config';
 import { RedisConfig } from './configs/redis.config';
 import { SwaggerConfig } from './configs/swagger.config';
 
+export class RabbitMQConfig {
+  @IsString()
+  PROTOCOL: string;
+
+  @IsString()
+  HOST: string;
+
+  @IsString()
+  ID: string;
+
+  @IsString()
+  PASSWORD: string;
+
+  @IsString()
+  ENVIRONMENT: string;
+
+  @IsNumber()
+  PORT: number;
+}
+
 export class Environment {
   @IsIn(['production', 'test', 'development'])
   NODE_ENV = process.env.NODE_ENV as 'production' | 'test' | 'development';
@@ -13,6 +33,9 @@ export class Environment {
 
   @IsString()
   SERVICE_VERSION = process.env.SERVICE_VERSION;
+
+  @IsString()
+  SERVER_ENVIRONMENT_ID = process.env.SERVER_ENVIRONMENT_ID || 'dev';
 
   @Type(() => Number)
   @IsNumber()

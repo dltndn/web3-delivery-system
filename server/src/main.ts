@@ -6,7 +6,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // 라우터 접두사 적용
-  app.setGlobalPrefix('api/v1/delivery/');
+  app.setGlobalPrefix('api/delivery/');
 
   await app.listen(Config.getEnvironment().SERVER_PORT);
   console.log(`Server is running on port ${Config.getEnvironment().SERVER_PORT}`);

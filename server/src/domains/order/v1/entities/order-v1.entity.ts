@@ -28,7 +28,7 @@ import { ORDER_STATUS } from '../../constants';
     @Column({
         nullable: false,
     })
-    client_id: string;
+    client_id: number;
 
     @ApiProperty({
         description: 'deliverer_id',
@@ -37,7 +37,7 @@ import { ORDER_STATUS } from '../../constants';
     @Column({
         nullable: true,
     })
-    deliverer_id: string;
+    deliverer_id: number;
 
     @ApiProperty({
         description: 'Order price',
