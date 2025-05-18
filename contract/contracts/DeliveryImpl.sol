@@ -60,9 +60,9 @@ contract DeliveryImpl is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgr
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @dev 주문 요청, manager의 서명 필요
-     * @param _orderId 주문 ID
-     * @param _orderPrice 주문 가격
+     * @dev 오더 요청, manager의 서명 필요
+     * @param _orderId 오더 ID
+     * @param _orderPrice 오더 가격
      * @param _manager 관리자 주소
      * @param _managerSignature 관리자 서명
      * @param _signatureExpiration 서명 만료 시간
@@ -74,9 +74,9 @@ contract DeliveryImpl is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgr
         if (block.timestamp > _signatureExpiration) revert ExpiredSignature();
 
         DeliveryStorage.Data storage data_ = _deliveryStorage();
-        // 주문 가격 확인
+        // 오더 가격 확인
         if (_orderPrice < data_.minOrderPrice) revert InvalidOrderPrice();
-        // 주문 상태 확인
+        // 오더 상태 확인
         if (data_.orders[_orderId].status != DeliveryStorage.OrderStatus.NotRequested) revert AlreadyRequested();
 
         address _client = msg.sender;
@@ -98,15 +98,15 @@ contract DeliveryImpl is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgr
         data_.orders[_orderId].status = DeliveryStorage.OrderStatus.Pending;
         data_.orders[_orderId].requestTime = block.timestamp;
         
-        // 주문자에게 주문 가격 차감
+        // 오더자에게 오더 가격 차감
         if (!IERC20(data_.currencyToken).transferFrom(_client, address(this), _orderPrice)) revert ExternalCallFailed();
 
         emit OrderRequested(_orderId, _client, _orderPrice);
     }
 
     /**
-     * @dev 주문 수락, 배송자 등록
-     * @param _orderId 주문 ID
+     * @dev 오더 수락, 배송자 등록
+     * @param _orderId 오더 ID
      */
     function acceptOrder(uint256 _orderId) external virtual whenNotPaused {
         DeliveryStorage.Data storage data_ = _deliveryStorage();
@@ -114,9 +114,9 @@ contract DeliveryImpl is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgr
         address _deliverer = msg.sender;
         // 배송자 등록 여부 확인
         if (!data_.registeredDeliverers[_deliverer]) revert NotRegisteredDeliverer();
-        // 주문 상태 확인
+        // 오더 상태 확인
         if (data_.orders[_orderId].status != DeliveryStorage.OrderStatus.Pending) revert NotPending();
-        // 주문자와 배송자가 같은 경우 예외 처리
+        // 오더자와 배송자가 같은 경우 예외 처리
         if (data_.orders[_orderId].client == _deliverer) revert SelfAccept();
 
         data_.orders[_orderId].deliverer = _deliverer;
@@ -127,14 +127,14 @@ contract DeliveryImpl is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgr
     }
 
     /**
-     * @dev 주문 완료, 수익금 정산, 호출은 누구나 가능
-     * @param _orderId 주문 ID
-     * @param _clientSignature 주문자 서명
+     * @dev 오더 완료, 수익금 정산, 호출은 누구나 가능
+     * @param _orderId 오더 ID
+     * @param _clientSignature 오더자 서명
      * @param _delivererSignature 배송자 서명
      */
     function completeOrder(uint256 _orderId, bytes calldata _clientSignature, bytes calldata _delivererSignature) external virtual whenNotPaused {
         DeliveryStorage.Data storage data_ = _deliveryStorage();
-        // 주문 상태 확인
+        // 오더 상태 확인
         if (data_.orders[_orderId].status != DeliveryStorage.OrderStatus.Accepted) revert NotAccepted();
 
         uint256 _now = block.timestamp;
@@ -175,8 +175,8 @@ contract DeliveryImpl is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgr
     }
 
     /**
-     * @dev 주문 취소
-     * @param _orderId 주문 ID
+     * @dev 오더 취소
+     * @param _orderId 오더 ID
      */
     function cancelOrder(uint256 _orderId) external virtual whenNotPaused {
         DeliveryStorage.Data storage data_ = _deliveryStorage();
@@ -187,17 +187,17 @@ contract DeliveryImpl is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgr
         address _sender = msg.sender;
 
         if (_status == DeliveryStorage.OrderStatus.NotRequested) revert NotRequested();
-        // 주문자 또는 관리자만 취소 가능
+        // 오더자 또는 관리자만 취소 가능
         if (_client != _sender && !hasRole(MANAGER_ROLE, _sender)) revert Unauthorized();
         if (_client == _sender) {
-            // 주문자가 취소 시 주문 상태가 Pending 인 경우만 취소 가능
+            // 오더자가 취소 시 오더 상태가 Pending 인 경우만 취소 가능
             if (_status != DeliveryStorage.OrderStatus.Pending) revert NotPending();
         }
 
         data_.orders[_orderId].status = DeliveryStorage.OrderStatus.Cancelled;
         data_.orders[_orderId].cancelTime = block.timestamp;
 
-        // 주문자에게 주문 가격 반환
+        // 오더자에게 오더 가격 반환
         bool transferSuccess = IERC20(_currencyToken).transfer(_client, data_.orders[_orderId].price);
         if (!transferSuccess) revert ExternalCallFailed();
 

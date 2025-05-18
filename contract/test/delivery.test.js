@@ -21,10 +21,10 @@ describe("Delivery", function () {
 
             await wemixDollar.connect(client1).approve(delivery.target, ORDER_PRICE);
 
-            // client 주문 요청
+            // client 오더 요청
             await delivery.connect(client1).requestOrder(orderId, ORDER_PRICE, manager.address, signature, signatureExpiration);
 
-            // 주문 정보 확인
+            // 오더 정보 확인
             const order = await delivery.getOrder(orderId);
             expect(order.client).to.equal(client1.address);
             expect(order.deliverer).to.equal(ethers.ZeroAddress);
@@ -49,7 +49,7 @@ describe("Delivery", function () {
 
             await wemixDollar.connect(client1).approve(delivery.target, ORDER_PRICE);
 
-            // client 주문 요청 실패
+            // client 오더 요청 실패
             await expect(delivery.connect(client1).requestOrder(orderId, ORDER_PRICE, manager.address, signature, signatureExpiration))
                 .to.be.revertedWithCustomError(delivery, "InvalidSignature");
         })
