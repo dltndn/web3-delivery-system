@@ -10,10 +10,11 @@ import {TreasuryControllerStorage} from "./storage/TreasuryContollerStorage.sol"
 
 import {IV2SwapRouter} from "@uniswap/swap-router-contracts/contracts/interfaces/IV2SwapRouter.sol";
 import {ITreasuryController} from "./interface/ITreasuryController.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract TreasuryControllerImpl is UUPSUpgradeable, OwnableUpgradeable, PausableUpgradeable, ITreasuryController, RevenueManager {
-
+    using SafeERC20 for IERC20;
     constructor() {
         _disableInitializers();
     }
@@ -120,8 +121,7 @@ contract TreasuryControllerImpl is UUPSUpgradeable, OwnableUpgradeable, Pausable
         uint256 domainReward = data_.domainRewards[msg.sender];
 
         // uniswapRouter에 토큰 사용 권한 부여
-        bool successApproval = IERC20(_token).approve(uniswapRouter, _amount);
-        if (!successApproval) revert ExternalCallFailed();
+        IERC20(_token).safeIncreaseAllowance(uniswapRouter, _amount);
 
         // 토큰 교환 경로 설정
         address[] memory path = new address[](2);

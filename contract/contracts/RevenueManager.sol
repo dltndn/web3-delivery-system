@@ -3,10 +3,12 @@ pragma solidity ^0.8.23;
 
 import {IRevenueManager} from "./interface/IRevenueManager.sol";
 import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 abstract contract RevenueManager is IRevenueManager, ERC165 {
-    
+    using SafeERC20 for IERC20;
+
     /*//////////////////////////////////////////////////////////////
                             MODIFIERS
     //////////////////////////////////////////////////////////////*/
@@ -31,7 +33,7 @@ abstract contract RevenueManager is IRevenueManager, ERC165 {
     function submitRevenue(address _token, uint256 _amount, address _rewardRecipient) external virtual onlyAuthorized returns (bool success) {
         _beforeSubmitRevenue(_token, _amount, _rewardRecipient);
         
-        bool successTransfer = IERC20(_token).transferFrom(msg.sender, address(this), _amount);
+        bool successTransfer = IERC20(_token).trySafeTransferFrom(msg.sender, address(this), _amount);
         if (!successTransfer) revert ExternalCallFailed();
 
         _afterSubmitRevenue(_token, _amount, _rewardRecipient);

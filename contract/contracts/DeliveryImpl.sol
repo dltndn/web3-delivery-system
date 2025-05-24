@@ -10,12 +10,13 @@ import {MulticallUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/Mu
 import {SignatureChecker} from "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
 import {DeliveryStorage} from "./storage/DeliveryStorage.sol";
 
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IRevenueManager} from "./interface/IRevenueManager.sol";
 import {IDelivery} from "./interface/IDelivery.sol";
 
 contract DeliveryImpl is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgradeable, EIP712Upgradeable, MulticallUpgradeable, IDelivery {
-
+    using SafeERC20 for IERC20;
     // keccak256("GOVERNOR_ROLE")
     bytes32 public constant GOVERNOR_ROLE = 0x7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f55;
     // keccak256("MANAGER_ROLE")
@@ -46,8 +47,7 @@ contract DeliveryImpl is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgr
         __EIP712_init("Delivery", "1");
         __Multicall_init();
 
-        IERC20(_currencyToken).approve(_treasuryController, type(uint256).max);
-        
+        IERC20(_currencyToken).safeIncreaseAllowance(_treasuryController, type(uint256).max);
         DeliveryStorage.Data storage data_ = _deliveryStorage();
         data_.treasuryController = _treasuryController;
         data_.currencyToken = _currencyToken;
@@ -99,7 +99,7 @@ contract DeliveryImpl is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgr
         data_.orders[_orderId].requestTime = block.timestamp;
         
         // 오더자에게 오더 가격 차감
-        if (!IERC20(data_.currencyToken).transferFrom(_client, address(this), _orderPrice)) revert ExternalCallFailed();
+        if (!IERC20(data_.currencyToken).trySafeTransferFrom(_client, address(this), _orderPrice)) revert ExternalCallFailed();
 
         emit OrderRequested(_orderId, _client, _orderPrice);
     }
@@ -169,7 +169,7 @@ contract DeliveryImpl is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgr
         if (!IRevenueManager(data_.treasuryController).submitRevenue(_currencyToken, _fee, _deliverer)) revert ExternalCallFailed();
 
         // 배송자에게 의뢰금 전달
-        if (!IERC20(_currencyToken).transfer(_deliverer, _orderPrice - _fee)) revert ExternalCallFailed();
+        if (!IERC20(_currencyToken).trySafeTransfer(_deliverer, _orderPrice - _fee)) revert ExternalCallFailed();
 
         emit OrderCompleted(_orderId, _now);
     }
@@ -198,7 +198,7 @@ contract DeliveryImpl is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgr
         data_.orders[_orderId].cancelTime = block.timestamp;
 
         // 오더자에게 오더 가격 반환
-        bool transferSuccess = IERC20(_currencyToken).transfer(_client, data_.orders[_orderId].price);
+        bool transferSuccess = IERC20(_currencyToken).trySafeTransfer(_client, data_.orders[_orderId].price);
         if (!transferSuccess) revert ExternalCallFailed();
 
         emit OrderCancelled(_orderId, _client);
@@ -213,7 +213,7 @@ contract DeliveryImpl is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgr
     function setCurrencyToken(address _currencyToken) external virtual onlyRole(DEFAULT_ADMIN_ROLE) {
         if (_currencyToken == address(0)) revert InvalidAddress();
         DeliveryStorage.Data storage data_ = _deliveryStorage();
-        IERC20(_currencyToken).approve(data_.treasuryController, type(uint256).max);
+        IERC20(_currencyToken).safeIncreaseAllowance(data_.treasuryController, type(uint256).max);
         data_.currencyToken = _currencyToken;
     }
 
