@@ -46,7 +46,7 @@ Web3 배달 플랫폼
 - **DeliveryGovernor**
   - 배달 관련 컨트랙트 운영에 관여합니다.
 
-#### 자세한 내용은 [해당 링크](https://deepwiki.com/dltndn/Wemade-interview-assignment/2-smart-contracts)를 참고해 주세요.
+#### 자세한 내용은 [해당 링크](https://deepwiki.com/dltndn/web3-delivery-system)를 참고해 주세요.
 
 ### 서버
 
